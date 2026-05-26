@@ -900,13 +900,13 @@ export default function App() {
               : '-top-32 opacity-0 -translate-y-4'
           }`}
         >
-          <div className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 text-white px-4 sm:px-8 py-3 sm:py-4 rounded-b-3xl shadow-[0_15px_30px_rgba(0,0,0,0.3)] border-b-2 border-x-2 border-emerald-500/30 flex items-center gap-3 sm:gap-4 pointer-events-auto">
-            <div className="p-1.5 sm:p-2 bg-emerald-800/80 rounded-xl border border-emerald-600">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-300 animate-pulse" />
+          <div className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 text-white px-8 py-4 rounded-b-3xl shadow-[0_15px_30px_rgba(0,0,0,0.3)] border-b-2 border-x-2 border-emerald-500/30 flex items-center gap-4 pointer-events-auto">
+            <div className="p-2 bg-emerald-800/80 rounded-xl border border-emerald-600">
+              <Sparkles className="w-5 h-5 text-yellow-300 animate-pulse" />
             </div>
             <div className="text-right">
-              <span className="text-[9px] sm:text-[10px] text-emerald-300 font-bold tracking-wider block uppercase">Developed & Supervised By</span>
-              <h3 className="text-sm sm:text-base font-black tracking-tight flex items-center gap-1.5">
+              <span className="text-[10px] text-emerald-300 font-bold tracking-wider block uppercase">Developed & Supervised By</span>
+              <h3 className="text-base font-black tracking-tight flex items-center gap-1.5">
                 من إنشاء
                 <span className="text-yellow-300 underline font-black">Besseghier Mohamed</span>
                 🎓✨
@@ -976,7 +976,7 @@ export default function App() {
 
       {/* FLOATING WELCOME NOTICES ("من تصميم ديليقي" "من بصغير محمد") */}
       {showFloatingNotice && (
-        <div className="fixed bottom-4 left-3 right-3 sm:left-6 sm:right-auto sm:bottom-6 z-40 max-w-sm w-auto sm:w-full">
+        <div className="fixed bottom-6 left-6 z-40 max-w-sm w-full animate-bounce">
           {noticeStep === 1 ? (
             <div className="bg-emerald-800 text-white p-5 rounded-2xl shadow-2xl border-2 border-emerald-500 flex items-center gap-4 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-700 rounded-full filter blur-xl opacity-50"></div>
@@ -1027,42 +1027,42 @@ export default function App() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-800 rounded-full filter blur-3xl opacity-30 transform translate-x-1/2 -translate-y-1/2"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-700 rounded-full filter blur-2xl opacity-20 transform -translate-x-1/3 translate-y-1/3"></div>
         
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 relative z-10">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="p-2 sm:p-3 bg-emerald-800/80 rounded-2xl border border-emerald-600 shadow-inner">
-                <GraduationCap className="w-8 h-8 sm:w-12 sm:h-12 text-emerald-300" />
+        <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-emerald-800/80 rounded-2xl border border-emerald-600 shadow-inner">
+                <GraduationCap className="w-12 h-12 text-emerald-300" />
               </div>
               <div>
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <span className="px-1.5 sm:px-2 py-0.5 bg-emerald-500/30 text-emerald-200 rounded-full text-[9px] sm:text-xs font-semibold tracking-wider border border-emerald-500/20">
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 bg-emerald-500/30 text-emerald-200 rounded-full text-xs font-semibold tracking-wider border border-emerald-500/20">
                     الجمهورية الجزائرية الديمقراطية الشعبية
                   </span>
                   <span className="w-2 h-2 rounded-full bg-red-500"></span>
                   <span className="w-2 h-2 rounded-full bg-white"></span>
                   <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                 </div>
-                <h1 className="text-lg sm:text-2xl md:text-3xl font-black mt-1 tracking-tight">
+                <h1 className="text-2xl md:text-3xl font-black mt-1 tracking-tight">
                   بوابة حساب وتحليل معدلات المدرسة العليا للأساتذة
                 </h1>
-                <p className="text-emerald-100 text-xs sm:text-sm md:text-base mt-1 font-medium">
+                <p className="text-emerald-100 text-sm md:text-base mt-1 font-medium">
                   المدرسة العليا للأساتذة - القبة / بوزريعة / ورقلة / قسنطينة
                 </p>
               </div>
             </div>
             
-            <div className="flex flex-wrap gap-2 sm:gap-3 justify-center">
-              <div className="bg-emerald-800/50 backdrop-blur-sm border border-emerald-700 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-center min-w-[90px] sm:min-w-[110px]">
-                <div className="text-[10px] sm:text-xs text-emerald-300 font-medium">النظام الدراسي</div>
-                <div className="text-xs sm:text-sm font-bold text-white">كلاسيكي / مدمج</div>
+            <div className="flex flex-wrap gap-3 justify-center">
+              <div className="bg-emerald-800/50 backdrop-blur-sm border border-emerald-700 px-4 py-2.5 rounded-xl text-center min-w-[110px]">
+                <div className="text-xs text-emerald-300 font-medium">النظام الدراسي</div>
+                <div className="text-sm font-bold text-white">كلاسيكي / مدمج</div>
               </div>
-              <div className="bg-emerald-800/50 backdrop-blur-sm border border-emerald-700 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-center min-w-[90px] sm:min-w-[110px]">
-                <div className="text-[10px] sm:text-xs text-emerald-300 font-medium">الدفعة الحالية</div>
-                <div className="text-xs sm:text-sm font-bold text-white">2025 / 2026</div>
+              <div className="bg-emerald-800/50 backdrop-blur-sm border border-emerald-700 px-4 py-2.5 rounded-xl text-center min-w-[110px]">
+                <div className="text-xs text-emerald-300 font-medium">الدفعة الحالية</div>
+                <div className="text-sm font-bold text-white">2025 / 2026</div>
               </div>
-              <div className="bg-emerald-800/50 backdrop-blur-sm border border-emerald-700 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-center min-w-[90px] sm:min-w-[110px]">
-                <div className="text-[10px] sm:text-xs text-emerald-300 font-medium">قاعدة البيانات</div>
-                <div className="text-xs sm:text-sm font-bold text-emerald-400 flex items-center justify-center gap-1">
+              <div className="bg-emerald-800/50 backdrop-blur-sm border border-emerald-700 px-4 py-2.5 rounded-xl text-center min-w-[110px]">
+                <div className="text-xs text-emerald-300 font-medium">قاعدة البيانات</div>
+                <div className="text-sm font-bold text-emerald-400 flex items-center justify-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                   نشطة
                 </div>
@@ -1073,7 +1073,7 @@ export default function App() {
       </header>
 
       {/* SPECIALIZATION SELECTOR SCREEN */}
-      <section className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8 w-full flex-grow">
+      <section className="max-w-7xl mx-auto px-4 py-8 w-full flex-grow">
         
         {/* DEFAULT FILL & QUICK ACTIONS BAR */}
         <div className="mb-6 bg-emerald-50 border border-emerald-200 p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4 shadow-sm">
@@ -1184,7 +1184,7 @@ export default function App() {
             <div className="lg:col-span-8 space-y-6">
               
               {/* NAVIGATION TABS */}
-              <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap gap-1 mobile-tabs-scroll">
+              <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap gap-1">
                 <button
                   onClick={() => setActiveTab('s1')}
                   className={`flex-1 py-3 px-4 rounded-xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${
@@ -1275,7 +1275,7 @@ export default function App() {
                   </div>
 
                   <div className="overflow-x-auto">
-                    <table className="w-full text-right border-collapse grades-table">
+                    <table className="w-full text-right border-collapse">
                       <thead>
                         <tr className="bg-slate-100/80 text-slate-700 text-xs font-bold border-b border-slate-200">
                           <th className="p-4">المقياس (المادة)</th>
@@ -1446,7 +1446,7 @@ export default function App() {
                   </div>
 
                   {/* Comparison Stats */}
-                  <div className="p-6 bg-orange-50/20 border-b border-orange-100 grid grid-cols-1 md:grid-cols-3 gap-4 remedial-comparison-grid">
+                  <div className="p-6 bg-orange-50/20 border-b border-orange-100 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-white p-4 rounded-xl border border-orange-100 text-center">
                       <div className="text-xs text-slate-500 font-bold">المعدل السنوي الحالي</div>
                       <div className="text-xl font-black text-slate-800 mt-1">
@@ -1475,7 +1475,7 @@ export default function App() {
 
                   {/* Remedial Subjects Table */}
                   <div className="overflow-x-auto">
-                    <table className="w-full text-right border-collapse remedial-table">
+                    <table className="w-full text-right border-collapse">
                       <thead>
                         <tr className="bg-slate-100/80 text-slate-700 text-xs font-bold border-b border-slate-200">
                           <th className="p-4">المقياس الضعيف</th>
@@ -1631,7 +1631,7 @@ export default function App() {
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="w-full text-right border-collapse saved-table">
+                      <table className="w-full text-right border-collapse">
                         <thead>
                           <tr className="bg-slate-100/80 text-slate-700 text-xs font-bold border-b border-slate-200">
                             <th className="p-4">اسم الطالب</th>
@@ -1960,7 +1960,7 @@ export default function App() {
                   </div>
                   
                   {/* Huge Circular Indicator */}
-                  <div className="relative w-36 h-36 mx-auto flex items-center justify-center mobile-circle-indicator">
+                  <div className="relative w-36 h-36 mx-auto flex items-center justify-center">
                     <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                       {/* Background circle */}
                       <circle
