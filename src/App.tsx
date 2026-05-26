@@ -1421,8 +1421,8 @@ export default function App() {
                     <button
                       onClick={() => {
                         if (confirm('هل أنت متأكد من مسح علامات هذا السداسي بالكامل؟')) {
-                          if (activeTab === 's1') setS1Grades(createEmptyGrades());
-                          else setS2Grades(createEmptyGrades());
+                          if (activeTab === 's1') setS1Grades(createEmptyGrades(SUBJECTS));
+                          else setS2Grades(createEmptyGrades(SUBJECTS));
                         }
                       }}
                       className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-lg border border-red-200 transition-all font-semibold"
