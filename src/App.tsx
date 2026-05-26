@@ -26,7 +26,10 @@ import {
   Lightbulb,
   Check,
   X,
-  Shuffle
+  Shuffle,
+  ChevronDown,
+  ChevronUp,
+  Languages
 } from 'lucide-react';
 import supabase from './lib/supabase';
 
@@ -38,20 +41,90 @@ interface Subject {
   category: 1 | 2;
 }
 
-// Fixed list of subjects for Arabic Literature - Primary Education (أدب عربي - ابتدائي)
-const SUBJECTS: Subject[] = [
-  { id: 'arabic', name: 'أدب عربي', coefficient: 2, category: 1 },
-  { id: 'sarf', name: 'صرف', coefficient: 2, category: 1 },
-  { id: 'nahw', name: 'نحو', coefficient: 2, category: 1 },
-  { id: 'math', name: 'رياضيات', coefficient: 2, category: 1 },
-  { id: 'physics', name: 'فيزياء', coefficient: 2, category: 1 },
-  { id: 'chemistry', name: 'كيمياء', coefficient: 2, category: 1 },
-  { id: 'islamic', name: 'تربية إسلامية', coefficient: 2, category: 1 },
-  { id: 'balagha', name: 'بلاغة', coefficient: 1, category: 1 },
-  { id: 'khat', name: 'خط / إملاء', coefficient: 1, category: 1 },
-  { id: 'writing_tech', name: 'فنيات الكتابة', coefficient: 1, category: 1 },
-  { id: 'english', name: 'إنجليزية', coefficient: 1, category: 2 },
-  { id: 'informatics', name: 'إعلام آلي / تكنولوجيا', coefficient: 1, category: 2 },
+// Define the Specialization Interface
+interface Specialization {
+  id: string;
+  name: string;
+  subtitle: string;
+  subjects: Subject[];
+  available: boolean;
+  icon: 'book' | 'calculator' | 'award' | 'file' | 'language';
+  totalCoefficients: number;
+}
+
+// All specializations data
+const SPECIALIZATIONS: Specialization[] = [
+  {
+    id: 'arabic_primary',
+    name: 'أدب عربي',
+    subtitle: 'طور التعليم الابتدائي',
+    available: true,
+    icon: 'book',
+    totalCoefficients: 19,
+    subjects: [
+      { id: 'arabic', name: 'أدب عربي', coefficient: 2, category: 1 },
+      { id: 'sarf', name: 'صرف', coefficient: 2, category: 1 },
+      { id: 'nahw', name: 'نحو', coefficient: 2, category: 1 },
+      { id: 'math', name: 'رياضيات', coefficient: 2, category: 1 },
+      { id: 'physics', name: 'فيزياء', coefficient: 2, category: 1 },
+      { id: 'chemistry', name: 'كيمياء', coefficient: 2, category: 1 },
+      { id: 'islamic', name: 'تربية إسلامية', coefficient: 2, category: 1 },
+      { id: 'balagha', name: 'بلاغة', coefficient: 1, category: 1 },
+      { id: 'khat', name: 'خط / إملاء', coefficient: 1, category: 1 },
+      { id: 'writing_tech', name: 'فنيات الكتابة', coefficient: 1, category: 1 },
+      { id: 'english', name: 'إنجليزية', coefficient: 1, category: 2 },
+      { id: 'informatics', name: 'إعلام آلي / تكنولوجيا', coefficient: 1, category: 2 },
+    ],
+  },
+  {
+    id: 'arabic_middle',
+    name: 'أدب عربي',
+    subtitle: 'طور التعليم المتوسط',
+    available: true,
+    icon: 'language',
+    totalCoefficients: 19,
+    subjects: [
+      { id: 'jahili', name: 'أدب جاهلي', coefficient: 2, category: 1 },
+      { id: 'arud', name: 'عروض', coefficient: 2, category: 1 },
+      { id: 'islamic', name: 'تربية إسلامية', coefficient: 2, category: 1 },
+      { id: 'linguistics', name: 'لسانيات', coefficient: 2, category: 1 },
+      { id: 'nahw', name: 'نحو', coefficient: 2, category: 1 },
+      { id: 'sarf', name: 'صرف', coefficient: 2, category: 1 },
+      { id: 'fiqh_lughah', name: 'فقه اللغة', coefficient: 2, category: 1 },
+      { id: 'imla', name: 'إملاء', coefficient: 1, category: 1 },
+      { id: 'balagha', name: 'بلاغة', coefficient: 1, category: 1 },
+      { id: 'writing_tech', name: 'فنيات الكتابة والتعبير', coefficient: 1, category: 1 },
+      { id: 'technology', name: 'تكنولوجيا', coefficient: 1, category: 2 },
+      { id: 'informatics', name: 'إعلام آلي', coefficient: 1, category: 2 },
+    ],
+  },
+  {
+    id: 'exact_sciences',
+    name: 'علوم دقيقة',
+    subtitle: 'طور التعليم المتوسط والثانوي',
+    available: false,
+    icon: 'calculator',
+    totalCoefficients: 24,
+    subjects: [],
+  },
+  {
+    id: 'french',
+    name: 'لغة فرنسية',
+    subtitle: 'طور التعليم الابتدائي والمتوسط',
+    available: false,
+    icon: 'award',
+    totalCoefficients: 18,
+    subjects: [],
+  },
+  {
+    id: 'history_geo',
+    name: 'تاريخ وجغرافيا',
+    subtitle: 'طور التعليم المتوسط والثانوي',
+    available: false,
+    icon: 'file',
+    totalCoefficients: 22,
+    subjects: [],
+  },
 ];
 
 // Grade Interface for state
@@ -62,10 +135,10 @@ interface GradeState {
   isExcluded?: boolean; // Whether the student is excluded from this subject due to absence or cheating
 }
 
-// Initial empty grades state
-const createEmptyGrades = () => {
+// Initial empty grades state (dynamic based on specialization)
+const createEmptyGrades = (subjects: Subject[]) => {
   const state: Record<string, GradeState> = {};
-  SUBJECTS.forEach(sub => {
+  subjects.forEach(sub => {
     state[sub.id] = { assessment: '', exam: '', remedialExam: '', isExcluded: false };
   });
   return state;
@@ -73,14 +146,19 @@ const createEmptyGrades = () => {
 
 export default function App() {
   // Navigation & UI State
-  const [activeSpecialization, setActiveSpecialization] = useState<'arabic_primary' | null>('arabic_primary');
+  const [activeSpecialization, setActiveSpecialization] = useState<string>('arabic_primary');
+  const [isSpecAccordionOpen, setIsSpecAccordionOpen] = useState(false);
+
+  // Get current specialization and subjects
+  const currentSpec = SPECIALIZATIONS.find(s => s.id === activeSpecialization) || SPECIALIZATIONS[0];
+  const SUBJECTS = currentSpec.subjects;
   const [activeTab, setActiveTab] = useState<'s1' | 's2' | 'remedial' | 'saved' | 'stats'>('s1');
   const [studentName, setStudentName] = useState('');
   const [note, setNote] = useState('');
   
   // Grades State
-  const [s1Grades, setS1Grades] = useState<Record<string, GradeState>>(createEmptyGrades());
-  const [s2Grades, setS2Grades] = useState<Record<string, GradeState>>(createEmptyGrades());
+  const [s1Grades, setS1Grades] = useState<Record<string, GradeState>>(createEmptyGrades(currentSpec.subjects));
+  const [s2Grades, setS2Grades] = useState<Record<string, GradeState>>(createEmptyGrades(currentSpec.subjects));
 
   // Database Saved Results State
   const [savedResults, setSavedResults] = useState<any[]>([]);
@@ -235,6 +313,19 @@ export default function App() {
         };
       });
     }
+  };
+
+  // Handle Specialization Change
+  const handleSpecializationChange = (specId: string) => {
+    const newSpec = SPECIALIZATIONS.find(s => s.id === specId);
+    if (!newSpec || !newSpec.available) return;
+    setActiveSpecialization(specId);
+    setS1Grades(createEmptyGrades(newSpec.subjects));
+    setS2Grades(createEmptyGrades(newSpec.subjects));
+    setIsRemedialActive(false);
+    setStudentName('');
+    setActiveTab('s1');
+    setIsSpecAccordionOpen(false);
   };
 
   // Handle Excluded Toggle
@@ -731,7 +822,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           student_name: studentName,
-          specialization: 'أدب عربي - ابتدائي',
+          specialization: `${currentSpec.name} - ${currentSpec.subtitle}`,
           semester_1_grades: s1Grades,
           semester_2_grades: s2Grades,
           remedial_grades: isRemedialActive ? Object.fromEntries(
@@ -763,8 +854,18 @@ export default function App() {
   // Load Saved Result back into Calculator State
   const handleLoadResult = (record: any) => {
     if (confirm(`هل تريد تحميل علامات الطالب "${record.student_name}"؟ سيؤدي هذا لاستبدال البيانات الحالية.`)) {
-      setS1Grades(record.semester_1_grades || createEmptyGrades());
-      setS2Grades(record.semester_2_grades || createEmptyGrades());
+      // Try to match the record's specialization
+      const recordSpec = record.specialization 
+        ? SPECIALIZATIONS.find(s => `${s.name} - ${s.subtitle}` === record.specialization)
+        : null;
+      
+      if (recordSpec && recordSpec.available) {
+        setActiveSpecialization(recordSpec.id);
+      }
+      
+      const activeSubs = recordSpec ? recordSpec.subjects : SUBJECTS;
+      setS1Grades(record.semester_1_grades || createEmptyGrades(activeSubs));
+      setS2Grades(record.semester_2_grades || createEmptyGrades(activeSubs));
       setStudentName(record.student_name);
       
       // If there are remedial grades, activate remedial mode
@@ -1102,77 +1203,133 @@ export default function App() {
             <BookMarked className="w-5 h-5 text-emerald-700" />
             اختر التخصص والطور الدراسي:
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            
-            {/* Active Specialty: Arabic Literature Primary */}
-            <div 
-              onClick={() => setActiveSpecialization('arabic_primary')}
-              className={`p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 shadow-sm relative ${
-                activeSpecialization === 'arabic_primary'
-                  ? 'border-emerald-600 bg-emerald-50/50 shadow-emerald-100/50'
-                  : 'border-slate-200 bg-white hover:border-slate-300'
+
+          {/* MOBILE: Accordion Dropdown */}
+          <div className="lg:hidden">
+            <button
+              onClick={() => setIsSpecAccordionOpen(!isSpecAccordionOpen)}
+              className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all duration-300 shadow-sm ${
+                isSpecAccordionOpen
+                  ? 'border-emerald-600 bg-emerald-50/50'
+                  : 'border-slate-200 bg-white'
               }`}
             >
-              <div className="absolute top-3 left-3 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                متاح حالياً
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                  currentSpec.available ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'
+                }`}>
+                  {currentSpec.icon === 'book' && <BookOpen className="w-6 h-6" />}
+                  {currentSpec.icon === 'language' && <Languages className="w-6 h-6" />}
+                  {currentSpec.icon === 'calculator' && <Calculator className="w-6 h-6" />}
+                  {currentSpec.icon === 'award' && <Award className="w-6 h-6" />}
+                  {currentSpec.icon === 'file' && <FileText className="w-6 h-6" />}
+                </div>
+                <div className="text-right">
+                  <h3 className="font-bold text-slate-900 text-base">{currentSpec.name}</h3>
+                  <p className="text-xs text-slate-500">{currentSpec.subtitle}</p>
+                </div>
+                {currentSpec.available && (
+                  <span className="px-2 py-0.5 bg-emerald-600 text-white text-[10px] font-bold rounded-full">متاح</span>
+                )}
               </div>
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700 mb-4">
-                <BookOpen className="w-6 h-6" />
+              {isSpecAccordionOpen ? (
+                <ChevronUp className="w-5 h-5 text-emerald-600" />
+              ) : (
+                <ChevronDown className="w-5 h-5 text-slate-400" />
+              )}
+            </button>
+            
+            {isSpecAccordionOpen && (
+              <div className="mt-2 space-y-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                {SPECIALIZATIONS.map(spec => (
+                  <button
+                    key={spec.id}
+                    onClick={() => spec.available && handleSpecializationChange(spec.id)}
+                    className={`w-full p-4 rounded-xl flex items-center gap-3 transition-all duration-200 ${
+                      spec.available
+                        ? activeSpecialization === spec.id
+                          ? 'bg-emerald-50 border-2 border-emerald-600 shadow-sm'
+                          : 'bg-white border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/30'
+                        : 'bg-slate-50 border border-slate-100 opacity-50 cursor-not-allowed'
+                    }`}
+                  >
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                      spec.available ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'
+                    }`}>
+                      {spec.icon === 'book' && <BookOpen className="w-6 h-6" />}
+                      {spec.icon === 'language' && <Languages className="w-6 h-6" />}
+                      {spec.icon === 'calculator' && <Calculator className="w-6 h-6" />}
+                      {spec.icon === 'award' && <Award className="w-6 h-6" />}
+                      {spec.icon === 'file' && <FileText className="w-6 h-6" />}
+                    </div>
+                    <div className="text-right flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-slate-900 text-sm">{spec.name}</h3>
+                        {spec.available ? (
+                          <span className="px-2 py-0.5 bg-emerald-600 text-white text-[9px] font-bold rounded-full">متاح</span>
+                        ) : (
+                          <span className="px-2 py-0.5 bg-slate-400 text-white text-[9px] font-bold rounded-full">قريباً</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">{spec.subtitle}</p>
+                      <div className="flex items-center gap-3 text-[10px] text-slate-400 mt-1">
+                        <span>المقاييس: {spec.subjects.length || '-'} مادة</span>
+                        <span>المعامل الكلي: {spec.totalCoefficients}</span>
+                      </div>
+                    </div>
+                    {activeSpecialization === spec.id && spec.available && (
+                      <Check className="w-5 h-5 text-emerald-600 shrink-0" />
+                    )}
+                  </button>
+                ))}
               </div>
-              <h3 className="font-bold text-slate-900 text-base">أدب عربي</h3>
-              <p className="text-xs text-slate-500 mt-1">طور التعليم الابتدائي</p>
-              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                <span>المقاييس: 12 مادة</span>
-                <span className="font-semibold text-emerald-700">المعامل الكلي: 19</span>
-              </div>
-            </div>
+            )}
+          </div>
 
-            {/* Inactive Specialties (Coming Soon) */}
-            <div className="p-5 rounded-2xl border border-slate-200 bg-slate-100/50 opacity-60 relative cursor-not-allowed">
-              <div className="absolute top-3 left-3 bg-slate-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                قريباً
+          {/* DESKTOP: Grid Cards */}
+          <div className="hidden lg:grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {SPECIALIZATIONS.map(spec => (
+              <div
+                key={spec.id}
+                onClick={() => spec.available && handleSpecializationChange(spec.id)}
+                className={`p-5 rounded-2xl border-2 transition-all duration-300 shadow-sm relative ${
+                  spec.available
+                    ? activeSpecialization === spec.id
+                      ? 'border-emerald-600 bg-emerald-50/50 shadow-emerald-100/50 cursor-pointer'
+                      : 'border-slate-200 bg-white hover:border-slate-300 cursor-pointer'
+                    : 'border-slate-200 bg-slate-100/50 opacity-60 cursor-not-allowed'
+                }`}
+              >
+                <div className={`absolute top-3 left-3 text-white text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  spec.available ? 'bg-emerald-600' : 'bg-slate-400'
+                }`}>
+                  {spec.available ? 'متاح حالياً' : 'قريباً'}
+                </div>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${
+                  spec.available ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'
+                }`}>
+                  {spec.icon === 'book' && <BookOpen className="w-6 h-6" />}
+                  {spec.icon === 'language' && <Languages className="w-6 h-6" />}
+                  {spec.icon === 'calculator' && <Calculator className="w-6 h-6" />}
+                  {spec.icon === 'award' && <Award className="w-6 h-6" />}
+                  {spec.icon === 'file' && <FileText className="w-6 h-6" />}
+                </div>
+                <h3 className={`font-bold text-base ${spec.available ? 'text-slate-900' : 'text-slate-600'}`}>
+                  {spec.name}
+                </h3>
+                <p className={`text-xs mt-1 ${spec.available ? 'text-slate-500' : 'text-slate-400'}`}>
+                  {spec.subtitle}
+                </p>
+                <div className={`mt-4 pt-3 border-t flex items-center justify-between text-xs ${
+                  spec.available ? 'border-slate-100 text-slate-500' : 'border-slate-200 text-slate-400'
+                }`}>
+                  <span>المقاييس: {spec.subjects.length || '-'} مادة</span>
+                  <span className={spec.available ? 'font-semibold text-emerald-700' : ''}>
+                    المعامل الكلي: {spec.totalCoefficients}
+                  </span>
+                </div>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center text-slate-600 mb-4">
-                <Calculator className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-slate-600 text-base">علوم دقيقة</h3>
-              <p className="text-xs text-slate-400 mt-1">طور التعليم المتوسط والثانوي</p>
-              <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-400">
-                <span>المقاييس: 14 مادة</span>
-                <span>المعامل الكلي: 24</span>
-              </div>
-            </div>
-
-            <div className="p-5 rounded-2xl border border-slate-200 bg-slate-100/50 opacity-60 relative cursor-not-allowed">
-              <div className="absolute top-3 left-3 bg-slate-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                قريباً
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center text-slate-600 mb-4">
-                <Award className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-slate-600 text-base">لغة فرنسية</h3>
-              <p className="text-xs text-slate-400 mt-1">طور التعليم الابتدائي والمتوسط</p>
-              <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-400">
-                <span>المقاييس: 11 مادة</span>
-                <span>المعامل الكلي: 18</span>
-              </div>
-            </div>
-
-            <div className="p-5 rounded-2xl border border-slate-200 bg-slate-100/50 opacity-60 relative cursor-not-allowed">
-              <div className="absolute top-3 left-3 bg-slate-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                قريباً
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center text-slate-600 mb-4">
-                <FileText className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-slate-600 text-base">تاريخ وجغرافيا</h3>
-              <p className="text-xs text-slate-400 mt-1">طور التعليم المتوسط والثانوي</p>
-              <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-400">
-                <span>المقاييس: 13 مادة</span>
-                <span>المعامل الكلي: 22</span>
-              </div>
-            </div>
-
+            ))}
           </div>
         </div>
 
@@ -1318,7 +1475,7 @@ export default function App() {
                             <tr key={sub.id} className="hover:bg-slate-50/50 transition-all">
                               <td className="p-4">
                                 <div className="font-bold text-slate-950 text-sm">{sub.name}</div>
-                                <div className="text-[10px] text-slate-400">تخصص أدب عربي - ابتدائي</div>
+                                <div className="text-[10px] text-slate-400">تخصص {currentSpec.name} - {currentSpec.subtitle}</div>
                               </td>
                               <td className="p-4 text-center">
                                 <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
