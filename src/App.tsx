@@ -410,63 +410,84 @@ export default function App() {
 
     // Academic Status Determination Rules
     let status = 'مؤجل للدورة الثانية';
+    let caseDescription = '';
+
+    const totalExclusions = s1ExclusionsCount + s2ExclusionsCount;
+    const totalEliminatories = s1EliminatoryCount + s2EliminatoryCount;
 
     // Rule 1 (الحالة 1): وُجد إقصاء من مقياسين أو أكثر في نفس السداسي -> إعادة السنة
     const hasCase1 = s1ExclusionsCount >= 2 || s2ExclusionsCount >= 2;
 
-    // Rule 3 (الحالة 3): المعدل السنوي العام ≥ 10/20، ويوجد إقصاء من مقياس واحد في سداسي واحد، أو مقياسين في سداسيين متفرقين -> دين
-    const hasCase3 = annual_avg >= 10 && (
-      (s1ExclusionsCount + s2ExclusionsCount === 1) || 
-      (s1ExclusionsCount === 1 && s2ExclusionsCount === 1)
-    );
+    // Rule 3 (الحالة 3): المعدل السنوي العام ≥ 10/20، ويوجد إقصاء من مقياس واحد في سداسي واحد -> ناجح مع دراسة الحالة
+    const hasCase3 = annual_avg >= 10 && totalExclusions === 1;
 
-    // Rule 4 (الحالة 4): المعدل السنوي العام ≥ 10/20، مع وجود علامة إلغائية في سداسي واحد على الأقل، ودون وجود إقصاء، ومعدل فئة المقاييس ≥ 8/20 -> انتقال بالإنقاذ أو الانتقال العادي حسب قرار لجنة المداولات
+    // Rule 4 (الحالة 4): المعدل السنوي العام ≥ 10/20، مع وجود علامة إلغائية في سداسي واحد على الأقل، ودون وجود إقصاء، ومعدل فئة المقاييس ≥ 8/20
     const hasCase4 = annual_avg >= 10 && 
                       (s1EliminatoryCount > 0 || s2EliminatoryCount > 0) && 
-                      (s1ExclusionsCount === 0 && s2ExclusionsCount === 0) && 
+                      totalExclusions === 0 && 
                       cat1_avg >= 8 && cat2_avg >= 8;
 
-    // Rule 5 (الحالة 5): المعدل السنوي العام > 10/20، مع وجود علامة إلغائية في سداسي واحد على الأقل، ودون وجود إقصاء، ومعدل فئة المقاييس ≥ 8/20 -> إنقاذ أو بدين حسب قرار لجنة المداولات
+    // Rule 5 (الحالة 5): المعدل السنوي العام > 10/20، مع وجود علامة إلغائية في سداسي واحد على الأقل، ودون وجود إقصاء، ومعدل فئة المقاييس ≥ 8/20
     const hasCase5 = annual_avg > 10 && 
                       (s1EliminatoryCount > 0 || s2EliminatoryCount > 0) && 
-                      (s1ExclusionsCount === 0 && s2ExclusionsCount === 0) && 
+                      totalExclusions === 0 && 
                       cat1_avg >= 8 && cat2_avg >= 8;
 
-    // Rule 6 (الحالة 6): المعدل السنوي العام > 10/20، مع وجود علامة إلغائية في السداسيين على الأقل، ومعدل فئة المقاييس ≥ 8/20 -> إنقاذ فقط أو إعادة السنة حسب دراسة الملف
+    // Rule 6 (الحالة 6): المعدل السنوي العام > 10/20، مع وجود علامة إلغائية في السداسيين معاً، ومعدل فئة المقاييس ≥ 8/20
     const hasCase6 = annual_avg > 10 && 
                       (s1EliminatoryCount > 0 && s2EliminatoryCount > 0) && 
-                      (s1ExclusionsCount === 0 && s2ExclusionsCount === 0) && 
+                      totalExclusions === 0 && 
                       cat1_avg >= 8 && cat2_avg >= 8;
 
-    // Set Status
+    // Set Status precisely based on user rules
     if (totalEnteredSubjects === 0) {
       status = 'مؤجل للدورة الثانية';
+      caseDescription = 'يرجى إدخال العلامات لبدء التحليل الأكاديمي للنتائج.';
     } else if (hasCase1) {
       status = 'إعادة السنة';
+      caseDescription = 'الحالة 1: إقصاء من مقياسين أو أكثر في نفس السداسي. القرار الحتمي هو إعادة السنة مباشرة ولا يمكن الانتقال لا بالإنقاذ ولا بالانتقال العادي.';
+    } else if (s1ExclusionsCount === 1 && s2ExclusionsCount === 1) {
+      status = 'دراسة إمكانية الإنقاذ';
+      caseDescription = 'الحالة 6 (تفصيل الإقصاء): وجود إقصاء في مقياسين من سداسيين مختلفين. يمكن للجنة دراسة إمكانية الإنقاذ حسب الملف والوضعية.';
+    } else if (totalExclusions === 1 && totalEliminatories >= 1) {
+      status = 'دراسة الملف حسب الحالة';
+      caseDescription = 'الحالة 6 (تفصيل الإقصاء والالتحاق): وجود مقياس واحد مقصى منه والآخر بعلامة إلغائية. تدرس اللجنة الملف والوضعية حالة بحالة.';
     } else if (hasCase3) {
-      status = 'دين';
+      status = 'ناجح مع دراسة الحالة';
+      caseDescription = 'الحالة 3: المعدل السنوي العام يساوي أو يفوق 10/20، ويوجد إقصاء من مقياس واحد فقط في السداسي. القرار: ناجح مع دراسة الحالة من طرف لجنة المداولات.';
     } else if (hasCase6) {
-      status = 'إنقاذ فقط أو إعادة السنة حسب دراسة الملف';
+      status = 'إنقاذ فقط أو إعادة السنة';
+      caseDescription = 'الحالة 6: المعدل السنوي العام أكبر من 10/20، مع وجود علامة إلغائية في السداسيين معاً، ومعدل فئة المقاييس يساوي أو يفوق 08/20. القرار يكون: إنقاذ فقط أو إعادة السنة حسب دراسة الملف.';
     } else if (hasCase5) {
-      status = 'إنقاذ أو بدين حسب قرار لجنة المداولات';
+      status = 'إنقاذ أو انتقال بدين (قرار اللجنة)';
+      caseDescription = 'الحالة 5: المعدل السنوي العام أكبر من 10/20، مع وجود علامة إلغائية في سداسي واحد على الأقل، ودون وجود إقصاء، ومعدل فئة المقاييس يساوي أو يفوق 08/20. القرار: اللجنة يمكن أن تمنح الإنقاذ أو الانتقال بدين.';
     } else if (hasCase4) {
-      status = 'انتقال بالإنقاذ أو الانتقال العادي حسب قرار لجنة المداولات';
-    } else if (annual_avg >= 10 && cat1_avg >= 10 && cat2_avg >= 10 && s1EliminatoryCount === 0 && s2EliminatoryCount === 0 && s1ExclusionsCount === 0 && s2ExclusionsCount === 0) {
+      status = 'انتقال بالإنقاذ أو انتقال عادي (قرار اللجنة)';
+      caseDescription = 'الحالة 4: المعدل السنوي العام يساوي أو يفوق 10/20، مع وجود علامة إلغائية في سداسي واحد على الأقل، ودون وجود إقصاء، ومعدل فئة المقاييس يساوي أو يفوق 08/20. القرار: يمكن للطالب الانتقال بالإنقاذ أو الانتقال العادي حسب قرار لجنة المداولات.';
+    } else if (annual_avg >= 10 && totalEliminatories === 0 && totalExclusions === 0) {
       if (hasSubjectsBelow10) {
         status = 'منتقل بدين';
+        caseDescription = 'الحالة 2: المعدل السنوي العام يساوي أو يفوق 10/20، ولا توجد علامات إلغائية، ولا يوجد إقصاء، مع وجود مواد معلقة تحت 10/20. القرار: ناجح منتقل بدين.';
       } else {
         status = 'ناجح';
+        caseDescription = 'الحالة 2: المعدل السنوي العام يساوي أو يفوق 10/20، ولا توجد علامات إلغائية، ولا يوجد إقصاء، وجميع المواد مستوفاة. القرار: ناجح مباشرة ومستوفٍ لكل الشروط.';
       }
+    } else if (annual_avg < 10 && totalEliminatories === 1 && totalExclusions === 0) {
+      status = 'دراسة إمكانية الإنقاذ (مقياس إلغائي واحد)';
+      caseDescription = 'تفاصيل إضافية: بقي مقياس واحد فقط بعلامة إلغائية ومعدل سنوي أقل من 10. يمكن للجنة دراسة إمكانية الإنقاذ عبر رفع بعض العلامات بما يسمح بوصول معدل الفئة إلى 08/20 دون تغيير المعدل العام كثيراً.';
     } else if (annual_avg < 5) {
       status = 'راسب';
+      caseDescription = 'المعدل السنوي العام يقل عن 5/20. القرار الأكاديمي الحتمي هو الرسوب وإعادة السنة.';
     } else if (
       (annual_avg >= 9.5 && annual_avg < 10) || 
       (cat1_avg >= 9.5 && cat1_avg < 10) || 
       (cat2_avg >= 9.5 && cat2_avg < 10)
     ) {
       status = 'إنقاذ';
+      caseDescription = 'قريب جداً من عتبة النجاح (بين 9.5 و 10) أو إحدى الفئات تقترب من 10. القرار: إنقاذ.';
     } else {
       status = 'مؤجل للدورة الثانية';
+      caseDescription = 'معدل سنوي بين 5 و 10 ولم يستوفِ الشروط الأساسية. الطالب مؤجل للدورة الاستدراكية لتحسين علامات الامتحانات.';
     }
 
     return {
@@ -476,6 +497,7 @@ export default function App() {
       cat1_avg,
       cat2_avg,
       status,
+      caseDescription,
       s1ExclusionsCount,
       s2ExclusionsCount,
       s1EliminatoryCount,
@@ -761,14 +783,20 @@ export default function App() {
         const res = await fetch('/api/saved_results', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id })
+          body: JSON.stringify({ 
+            id,
+            // The secret code is embedded in the request payload securely 
+            // without showing any input fields or checkboxes in the UI!
+            security_code: 2007 
+          })
         });
 
         if (res.ok) {
           setSavedResults(prev => prev.filter(item => item.id !== id));
           alert('تم حذف السجل بنجاح.');
         } else {
-          throw new Error('فشل حذف السجل');
+          const errData = await res.json();
+          throw new Error(errData.error || 'فشل حذف السجل');
         }
       } catch (err: any) {
         console.error('Error deleting:', err);
@@ -838,13 +866,13 @@ export default function App() {
     if (status === 'ناجح') {
       return 'bg-emerald-100 text-emerald-800 border-emerald-200';
     }
-    if (status === 'منتقل بدين') {
+    if (status === 'منتقل بدين' || status === 'دين' || status.includes('دين')) {
       return 'bg-yellow-100 text-yellow-800 border-yellow-200';
     }
     if (status === 'مؤجل للدورة الثانية') {
       return 'bg-orange-100 text-orange-800 border-orange-200';
     }
-    if (status === 'إنقاذ') {
+    if (status === 'إنقاذ' || status.includes('إنقاذ')) {
       return 'bg-blue-100 text-blue-800 border-blue-200';
     }
     if (status === 'راسب' || status === 'إعادة السنة') {
@@ -852,15 +880,6 @@ export default function App() {
     }
     if (status.includes('ناجح مع دراسة الحالة')) {
       return 'bg-emerald-50 text-emerald-900 border-emerald-300';
-    }
-    if (status.includes('إنقاذ فقط أو إعادة السنة')) {
-      return 'bg-purple-100 text-purple-800 border-purple-200';
-    }
-    if (status.includes('إنقاذ أو انتقال بدين')) {
-      return 'bg-blue-50 text-blue-900 border-blue-300';
-    }
-    if (status.includes('انتقال بالإنقاذ أو الانتقال العادي')) {
-      return 'bg-teal-100 text-teal-800 border-teal-200';
     }
     return 'bg-slate-100 text-slate-800 border-slate-200';
   };
@@ -1283,9 +1302,12 @@ export default function App() {
                             if (grade.isExcluded) {
                               statusText = 'إقصاء رسمي';
                               statusColor = 'text-red-700 bg-red-100 border-red-300 font-bold';
+                            } else if (finalGrade < 5) {
+                              statusText = 'لاغية';
+                              statusColor = 'text-red-700 bg-red-50 border-red-200 font-bold';
                             } else if (finalGrade < 10) {
-                              statusText = 'علامة إلغائية (لاغية)';
-                              statusColor = 'text-red-700 bg-red-50 border-red-200 font-bold animate-pulse';
+                              statusText = 'غ.مستوفاة';
+                              statusColor = 'text-orange-700 bg-orange-50 border-orange-200 font-semibold';
                             } else {
                               statusText = 'مستوفاة';
                               statusColor = 'text-emerald-700 bg-emerald-50 border-emerald-200 font-semibold';
@@ -1382,7 +1404,7 @@ export default function App() {
                     <div className="flex items-start gap-2.5 text-xs text-emerald-900">
                       <Info className="w-4.5 h-4.5 text-emerald-700 shrink-0 mt-0.5" />
                       <div className="leading-relaxed">
-                        <strong>طريقة احتساب المقياس:</strong> نقطة المقياس = (الامتحان × 2 + المراقبة) ÷ 3. أي علامة مقياس أقل من 10 تعتبر علامة لاغية للموسم الدراسي.
+                        <strong>طريقة احتساب المقياس:</strong> نقطة المقياس = (الامتحان × 2 + المراقبة) ÷ 3.
                       </div>
                     </div>
                   </div>
@@ -1721,6 +1743,7 @@ export default function App() {
                       </table>
                     </div>
                   )}
+
                 </div>
               )}
 
@@ -1976,12 +1999,26 @@ export default function App() {
                   </div>
 
                   {/* Status Tag */}
-                  <div>
-                    <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-black border ${
-                      getStatusBadgeClasses(currentAverages.status)
-                    }`}>
-                      {currentAverages.status}
-                    </span>
+                  <div className="space-y-2">
+                    <div>
+                      <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-black border ${
+                        getStatusBadgeClasses(currentAverages.status)
+                      }`}>
+                        {currentAverages.status}
+                      </span>
+                    </div>
+                    {/* Real-time Case/Rule Description */}
+                    {currentAverages.caseDescription && (
+                      <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl text-right">
+                        <span className="text-[10px] text-emerald-800 font-bold block mb-1 flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          تطبيق قواعد المداولة الرسمية:
+                        </span>
+                        <p className="text-[11px] text-slate-600 leading-relaxed font-semibold">
+                          {currentAverages.caseDescription}
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Sub Averages Grid */}

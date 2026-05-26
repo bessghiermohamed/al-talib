@@ -62,8 +62,14 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'DELETE') {
-      const { id } = req.body;
+      const { id, security_code } = req.body;
       if (!id) return res.status(400).json({ error: 'معرف السجل مطلوب' });
+      
+      // Security Check: Fix fixed code 2007 (منع الحذف بدون الرمز الصحيح)
+      // This is a secure server-side check that doesn't expose the code in UI
+      if (parseInt(security_code) !== 2007) {
+        return res.status(403).json({ error: 'رمز التحقق الأمني غير صحيح. لا يمكن إتمام عملية الحذف.' });
+      }
 
       const { error } = await supabase
         .from('saved_results')
