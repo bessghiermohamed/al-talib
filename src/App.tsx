@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   GraduationCap,
   Calculator,
@@ -31,7 +31,6 @@ import {
   ChevronUp,
   Languages
 } from 'lucide-react';
-import supabase from './lib/supabase';
 
 // Define the Subject Interface
 interface Subject {
@@ -653,7 +652,10 @@ export default function App() {
     };
   };
 
-  const currentAverages = calculateAllAverages(isRemedialActive);
+  const currentAverages = useMemo(
+    () => calculateAllAverages(isRemedialActive),
+    [s1Grades, s2Grades, isRemedialActive, activeSpecialization]
+  );
 
   // Generate Smart Advisor Report
   const handleGetAdvisorReport = async () => {
