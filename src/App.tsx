@@ -79,7 +79,7 @@ const SPECIALIZATIONS: Specialization[] = [
   {
     id: 'arabic_middle',
     name: 'أدب عربي',
-    subtitle: 'طور التعليم المتوسط',
+    subtitle: 'طور التعليم المتوسط / الثانوي',
     available: true,
     icon: 'language',
     totalCoefficients: 19,
@@ -146,19 +146,30 @@ const createEmptyGrades = (subjects: Subject[]) => {
 
 export default function App() {
   // Navigation & UI State
-  const [activeSpecialization, setActiveSpecialization] = useState<string>('arabic_primary');
+  const [activeSpecialization, setActiveSpecialization] = useState<string | null>(null);
   const [isSpecAccordionOpen, setIsSpecAccordionOpen] = useState(false);
+  const [showSubjects, setShowSubjects] = useState(false);
 
   // Get current specialization and subjects
-  const currentSpec = SPECIALIZATIONS.find(s => s.id === activeSpecialization) || SPECIALIZATIONS[0];
-  const SUBJECTS = currentSpec.subjects;
+  const currentSpec = activeSpecialization ? (SPECIALIZATIONS.find(s => s.id === activeSpecialization) || SPECIALIZATIONS[0]) : null;
+  const SUBJECTS = currentSpec?.subjects || [];
   const [activeTab, setActiveTab] = useState<'s1' | 's2' | 'remedial' | 'saved' | 'stats'>('s1');
   const [studentName, setStudentName] = useState('');
   const [note, setNote] = useState('');
   
   // Grades State
-  const [s1Grades, setS1Grades] = useState<Record<string, GradeState>>(createEmptyGrades(currentSpec.subjects));
-  const [s2Grades, setS2Grades] = useState<Record<string, GradeState>>(createEmptyGrades(currentSpec.subjects));
+  const [s1Grades, setS1Grades] = useState<Record<string, GradeState>>({});
+  const [s2Grades, setS2Grades] = useState<Record<string, GradeState>>({});
+
+  // Animate subjects in when specialization is selected
+  useEffect(() => {
+    if (activeSpecialization && currentSpec) {
+      const timer = setTimeout(() => setShowSubjects(true), 150);
+      return () => clearTimeout(timer);
+    } else {
+      setShowSubjects(false);
+    }
+  }, [activeSpecialization]);
 
   // Database Saved Results State
   const [savedResults, setSavedResults] = useState<any[]>([]);
@@ -319,13 +330,16 @@ export default function App() {
   const handleSpecializationChange = (specId: string) => {
     const newSpec = SPECIALIZATIONS.find(s => s.id === specId);
     if (!newSpec || !newSpec.available) return;
-    setActiveSpecialization(specId);
-    setS1Grades(createEmptyGrades(newSpec.subjects));
-    setS2Grades(createEmptyGrades(newSpec.subjects));
-    setIsRemedialActive(false);
-    setStudentName('');
-    setActiveTab('s1');
-    setIsSpecAccordionOpen(false);
+    setShowSubjects(false); // fade out first
+    setTimeout(() => {
+      setActiveSpecialization(specId);
+      setS1Grades(createEmptyGrades(newSpec.subjects));
+      setS2Grades(createEmptyGrades(newSpec.subjects));
+      setIsRemedialActive(false);
+      setStudentName('');
+      setActiveTab('s1');
+      setIsSpecAccordionOpen(false);
+    }, 200);
   };
 
   // Handle Excluded Toggle
@@ -349,39 +363,79 @@ export default function App() {
 
   // Helper to fill default realistic grades (ملء افتراضي للنقاط)
   const handleFillDefaultGrades = () => {
-    // Realistic successful/struggling student profile
-    const defaultS1: Record<string, GradeState> = {
-      arabic: { assessment: '14.5', exam: '13', remedialExam: '' },
-      sarf: { assessment: '15', exam: '12', remedialExam: '' },
-      nahw: { assessment: '13', exam: '14', remedialExam: '' },
-      math: { assessment: '11', exam: '8.5', remedialExam: '' },
-      physics: { assessment: '9.5', exam: '7', remedialExam: '' },
-      chemistry: { assessment: '10', exam: '8', remedialExam: '' },
-      islamic: { assessment: '16', exam: '15', remedialExam: '' },
-      balagha: { assessment: '14', exam: '12', remedialExam: '' },
-      khat: { assessment: '15', exam: '15', remedialExam: '' },
-      writing_tech: { assessment: '13', exam: '13', remedialExam: '' },
-      english: { assessment: '12', exam: '11', remedialExam: '' },
-      informatics: { assessment: '13', exam: '14', remedialExam: '' },
+    if (!currentSpec) return;
+
+    const defaultGradesBySpec: Record<string, { s1: Record<string, GradeState>; s2: Record<string, GradeState> }> = {
+      arabic_primary: {
+        s1: {
+          arabic: { assessment: '14.5', exam: '13', remedialExam: '' },
+          sarf: { assessment: '15', exam: '12', remedialExam: '' },
+          nahw: { assessment: '13', exam: '14', remedialExam: '' },
+          math: { assessment: '11', exam: '8.5', remedialExam: '' },
+          physics: { assessment: '9.5', exam: '7', remedialExam: '' },
+          chemistry: { assessment: '10', exam: '8', remedialExam: '' },
+          islamic: { assessment: '16', exam: '15', remedialExam: '' },
+          balagha: { assessment: '14', exam: '12', remedialExam: '' },
+          khat: { assessment: '15', exam: '15', remedialExam: '' },
+          writing_tech: { assessment: '13', exam: '13', remedialExam: '' },
+          english: { assessment: '12', exam: '11', remedialExam: '' },
+          informatics: { assessment: '13', exam: '14', remedialExam: '' },
+        },
+        s2: {
+          arabic: { assessment: '15', exam: '14', remedialExam: '' },
+          sarf: { assessment: '14', exam: '13', remedialExam: '' },
+          nahw: { assessment: '14', exam: '15', remedialExam: '' },
+          math: { assessment: '12', exam: '9', remedialExam: '' },
+          physics: { assessment: '11', exam: '8', remedialExam: '' },
+          chemistry: { assessment: '11.5', exam: '8.5', remedialExam: '' },
+          islamic: { assessment: '17', exam: '16', remedialExam: '' },
+          balagha: { assessment: '15', exam: '14', remedialExam: '' },
+          khat: { assessment: '16', exam: '16', remedialExam: '' },
+          writing_tech: { assessment: '14', exam: '14', remedialExam: '' },
+          english: { assessment: '13', exam: '12', remedialExam: '' },
+          informatics: { assessment: '14', exam: '13', remedialExam: '' },
+        },
+      },
+      arabic_middle: {
+        s1: {
+          jahili: { assessment: '14', exam: '12', remedialExam: '' },
+          arud: { assessment: '13', exam: '11', remedialExam: '' },
+          islamic: { assessment: '16', exam: '15', remedialExam: '' },
+          linguistics: { assessment: '12', exam: '10', remedialExam: '' },
+          nahw: { assessment: '14', exam: '13', remedialExam: '' },
+          sarf: { assessment: '15', exam: '13', remedialExam: '' },
+          fiqh_lughah: { assessment: '13', exam: '12', remedialExam: '' },
+          imla: { assessment: '14', exam: '13', remedialExam: '' },
+          balagha: { assessment: '13', exam: '11', remedialExam: '' },
+          writing_tech: { assessment: '14', exam: '12', remedialExam: '' },
+          technology: { assessment: '12', exam: '11', remedialExam: '' },
+          informatics: { assessment: '13', exam: '12', remedialExam: '' },
+        },
+        s2: {
+          jahili: { assessment: '15', exam: '13', remedialExam: '' },
+          arud: { assessment: '14', exam: '12', remedialExam: '' },
+          islamic: { assessment: '17', exam: '16', remedialExam: '' },
+          linguistics: { assessment: '13', exam: '11', remedialExam: '' },
+          nahw: { assessment: '15', exam: '14', remedialExam: '' },
+          sarf: { assessment: '14', exam: '14', remedialExam: '' },
+          fiqh_lughah: { assessment: '14', exam: '13', remedialExam: '' },
+          imla: { assessment: '15', exam: '14', remedialExam: '' },
+          balagha: { assessment: '14', exam: '12', remedialExam: '' },
+          writing_tech: { assessment: '15', exam: '13', remedialExam: '' },
+          technology: { assessment: '13', exam: '12', remedialExam: '' },
+          informatics: { assessment: '14', exam: '13', remedialExam: '' },
+        },
+      },
     };
 
-    const defaultS2: Record<string, GradeState> = {
-      arabic: { assessment: '15', exam: '14', remedialExam: '' },
-      sarf: { assessment: '14', exam: '13', remedialExam: '' },
-      nahw: { assessment: '14', exam: '15', remedialExam: '' },
-      math: { assessment: '12', exam: '9', remedialExam: '' },
-      physics: { assessment: '11', exam: '8', remedialExam: '' },
-      chemistry: { assessment: '11.5', exam: '8.5', remedialExam: '' },
-      islamic: { assessment: '17', exam: '16', remedialExam: '' },
-      balagha: { assessment: '15', exam: '14', remedialExam: '' },
-      khat: { assessment: '16', exam: '16', remedialExam: '' },
-      writing_tech: { assessment: '14', exam: '14', remedialExam: '' },
-      english: { assessment: '13', exam: '12', remedialExam: '' },
-      informatics: { assessment: '14', exam: '13', remedialExam: '' },
-    };
+    const defaults = defaultGradesBySpec[activeSpecialization!];
+    if (!defaults) {
+      alert('لا توجد نقاط افتراضية لهذا التخصص بعد');
+      return;
+    }
 
-    setS1Grades(defaultS1);
-    setS2Grades(defaultS2);
+    setS1Grades(defaults.s1);
+    setS2Grades(defaults.s2);
     setStudentName('طالب تجريبي متميز');
     alert('تم ملء الجدول بنقاط افتراضية ممتازة وواقعية بنجاح! يمكنك الآن تصفح النتائج أو محاكاة الاستدراك.');
   };
@@ -822,7 +876,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           student_name: studentName,
-          specialization: `${currentSpec.name} - ${currentSpec.subtitle}`,
+          specialization: `${currentSpec!.name} - ${currentSpec!.subtitle}`,
           semester_1_grades: s1Grades,
           semester_2_grades: s2Grades,
           remedial_grades: isRemedialActive ? Object.fromEntries(
@@ -1211,25 +1265,41 @@ export default function App() {
               className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all duration-300 shadow-sm ${
                 isSpecAccordionOpen
                   ? 'border-emerald-600 bg-emerald-50/50'
-                  : 'border-slate-200 bg-white'
+                  : activeSpecialization
+                    ? 'border-slate-200 bg-white'
+                    : 'border-dashed border-emerald-400 bg-emerald-50/30'
               }`}
             >
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                  currentSpec.available ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'
-                }`}>
-                  {currentSpec.icon === 'book' && <BookOpen className="w-6 h-6" />}
-                  {currentSpec.icon === 'language' && <Languages className="w-6 h-6" />}
-                  {currentSpec.icon === 'calculator' && <Calculator className="w-6 h-6" />}
-                  {currentSpec.icon === 'award' && <Award className="w-6 h-6" />}
-                  {currentSpec.icon === 'file' && <FileText className="w-6 h-6" />}
-                </div>
-                <div className="text-right">
-                  <h3 className="font-bold text-slate-900 text-base">{currentSpec.name}</h3>
-                  <p className="text-xs text-slate-500">{currentSpec.subtitle}</p>
-                </div>
-                {currentSpec.available && (
-                  <span className="px-2 py-0.5 bg-emerald-600 text-white text-[10px] font-bold rounded-full">متاح</span>
+                {currentSpec ? (
+                  <>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                      currentSpec.available ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'
+                    }`}>
+                      {currentSpec.icon === 'book' && <BookOpen className="w-6 h-6" />}
+                      {currentSpec.icon === 'language' && <Languages className="w-6 h-6" />}
+                      {currentSpec.icon === 'calculator' && <Calculator className="w-6 h-6" />}
+                      {currentSpec.icon === 'award' && <Award className="w-6 h-6" />}
+                      {currentSpec.icon === 'file' && <FileText className="w-6 h-6" />}
+                    </div>
+                    <div className="text-right">
+                      <h3 className="font-bold text-slate-900 text-base">{currentSpec.name}</h3>
+                      <p className="text-xs text-slate-500">{currentSpec.subtitle}</p>
+                    </div>
+                    {currentSpec.available && (
+                      <span className="px-2 py-0.5 bg-emerald-600 text-white text-[10px] font-bold rounded-full">متاح</span>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-100 text-emerald-700">
+                      <BookMarked className="w-6 h-6" />
+                    </div>
+                    <div className="text-right">
+                      <h3 className="font-bold text-emerald-700 text-base">اختر التخصص</h3>
+                      <p className="text-xs text-slate-400">اضغط لاختيار التخصص والطور الدراسي</p>
+                    </div>
+                  </>
                 )}
               </div>
               {isSpecAccordionOpen ? (
@@ -1333,9 +1403,22 @@ export default function App() {
           </div>
         </div>
 
+        {/* NO SPECIALIZATION SELECTED - Prompt */}
+        {!activeSpecialization && (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-24 h-24 rounded-full bg-emerald-50 flex items-center justify-center mb-6">
+              <BookMarked className="w-12 h-12 text-emerald-600" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-700 mb-2">اختر التخصص أولاً</h3>
+            <p className="text-slate-400 text-sm max-w-md">اختر التخصص والطور الدراسي أعلاه لبدء حساب المعدلات</p>
+          </div>
+        )}
+
         {/* MAIN LAYOUT GRID */}
         {activeSpecialization && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className={`grid grid-cols-1 lg:grid-cols-12 gap-8 items-start transition-all duration-500 ${
+            showSubjects ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}>
             
             {/* LEFT COLUMN: CALCULATOR & TABS (8 COLS) */}
             <div className="lg:col-span-8 space-y-6">
@@ -1475,7 +1558,7 @@ export default function App() {
                             <tr key={sub.id} className="hover:bg-slate-50/50 transition-all">
                               <td className="p-4">
                                 <div className="font-bold text-slate-950 text-sm">{sub.name}</div>
-                                <div className="text-[10px] text-slate-400">تخصص {currentSpec.name} - {currentSpec.subtitle}</div>
+                                <div className="text-[10px] text-slate-400">تخصص {currentSpec!.name} - {currentSpec!.subtitle}</div>
                               </td>
                               <td className="p-4 text-center">
                                 <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
